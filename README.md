@@ -7,7 +7,7 @@ A small browser-based exploration tool for motion graphics. Built as a single HT
 
 ## Live demo
 
-👉 **[Try it in your browser](https://nick-a8c.github.io/index.html/)**
+👉 **[Try it in your browser](https://nick-a8c.github.io/webgl-motion-studies/)**
 
 ## Preview
 
