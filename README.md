@@ -12,7 +12,7 @@ A small browser-based exploration tool for motion graphics. Built as a single HT
 ## Preview
 
 <!-- Replace with actual screenshot or GIF -->
-![Preview](preview.png)
+![Preview](https://nick-a8c.github.io/webgl-motion-studies/preview/example.png)
 
 <!--
 Suggested capture:
