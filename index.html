@@ -7991,10 +7991,12 @@ function renderHalftone(data){
         addBtn.className = 'lab-layer-add';
         addBtn.textContent = '+ Add layer';
         addBtn.addEventListener('click', () => {
-          recipe.subjects.push(defaultLayer());
-          recipe.activeLayer = recipe.subjects.length - 1;
-          ensureLayerStates();
-          activateLayer(recipe.activeLayer);
+          // Insert at index 0 so the new layer sits on top of the stack
+          // (top of Layers panel = front of canvas).
+          recipe.subjects.unshift(defaultLayer());
+          layerStates.unshift(makeLayerState());
+          recipe.activeLayer = 0;
+          activateLayer(0);
           rerender();
           rebuildForm();
         });
@@ -9618,9 +9620,23 @@ function renderHalftone(data){
       }
       // Restore the user's editing focus.
       activateLayer(restoreActive);
+      // Stacking: layer index 0 sits at the top of the Layers panel and must
+      // draw last so it composites on top of layers beneath it on the canvas.
+      applyLayerRenderOrder();
       // Layer-panel labels mirror content/style/type — refresh in sync.
       if (window.MotionLab && window.MotionLab._refreshLayerLabels){
         window.MotionLab._refreshLayerLabels();
+      }
+    }
+
+    function applyLayerRenderOrder(){
+      const n = layerStates.length;
+      for (let i = 0; i < n; i++){
+        const s = layerStates[i];
+        if (!s || !s.group) continue;
+        const ro = (n - 1 - i);
+        s.group.renderOrder = ro;
+        s.group.traverse(o => { o.renderOrder = ro; });
       }
     }
 
@@ -10171,6 +10187,12 @@ function renderHalftone(data){
     host.appendChild(row);
   }
 
+  // In-session memory of which sections the user has expanded/collapsed in
+  // each tool's slider panel. Keyed by anim.id → { [sectionName]: boolean }
+  // where true = open. Re-applied on tool re-entry so switching tools
+  // doesn't reset the user's interactions back to defaultOpenSections.
+  const SECTION_OPEN_STATE = {};
+
   function buildControls(anim){
     const controlsHost = getActiveControlsHost();
     if (!controlsHost) return;
@@ -10204,11 +10226,23 @@ function renderHalftone(data){
           // Per-tool start-open whitelist. When `defaultOpenSections` is
           // defined, every other section header starts collapsed; sections
           // listed there stay open. Falsy/missing → all open (legacy).
-          const openList = anim.defaultOpenSections;
-          if (Array.isArray(openList) && openList.length){
-            if (!openList.includes(c.section)) header.classList.add('collapsed');
+          // In-session memory wins over the default whitelist so re-entering
+          // a tool keeps the user's last open/collapse state.
+          const remembered = SECTION_OPEN_STATE[anim.id] || {};
+          let isOpen;
+          if (Object.prototype.hasOwnProperty.call(remembered, c.section)){
+            isOpen = remembered[c.section];
+          } else {
+            const openList = anim.defaultOpenSections;
+            isOpen = !(Array.isArray(openList) && openList.length && !openList.includes(c.section));
           }
-          header.addEventListener('click', () => header.classList.toggle('collapsed'));
+          if (!isOpen) header.classList.add('collapsed');
+          const sectionName = c.section;
+          header.addEventListener('click', () => {
+            const collapsed = header.classList.toggle('collapsed');
+            if (!SECTION_OPEN_STATE[anim.id]) SECTION_OPEN_STATE[anim.id] = {};
+            SECTION_OPEN_STATE[anim.id][sectionName] = !collapsed;
+          });
           controlsHost.appendChild(header);
           controlsHost.appendChild(body);
           currentBody = body;

@@ -4,8 +4,29 @@ Single-file Three.js animation studio. HTML + CSS + every animation + every
 page lives in `index.html` (~11.5k lines, ~430KB). No build step, no
 `node_modules`, no bundler. Drop into any browser, or serve locally.
 
-Last checkpoint: **2026-05-19**. Repo: <https://github.com/nick-a8c/motionkit>
+Last checkpoint: **2026-05-20**. Repo: <https://github.com/nick-a8c/motionkit>
 (deployed at <https://nick-a8c.github.io/motionkit/>).
+
+### 2026-05-20 micro-session
+
+Three small but user-visible fixes:
+
+- **Lab layer stacking now matches the Layers panel.** Layer index 0 (top of
+  the panel) draws last so it composites in front. Implemented as
+  `applyLayerRenderOrder()` called at the end of `rerender()` — sets
+  `renderOrder = (n - 1 - i)` on each layer's group and traverses children.
+  Reordering via ↑/↓ or drag-and-drop already calls `rerender()`, so the
+  ordering follows automatically.
+- **"+ Add layer" now inserts at index 0** (top of the stack) instead of
+  pushing to the end. Mirrors the existing `+ Effects` behaviour. The new
+  layer becomes active. Combined with the renderOrder fix above, a freshly
+  added shape layer visibly sits on top.
+- **Playground section collapse state persists per tool within the session.**
+  A new module-level `SECTION_OPEN_STATE` map (keyed by `anim.id`) remembers
+  every header toggle. `buildControls` consults it on tool re-entry; the
+  per-tool `defaultOpenSections` whitelist is only applied for sections the
+  user has not yet touched. Resolves the prior behaviour where switching
+  Composer → Glyph → Composer reset everything back to defaults.
 
 Earlier backups in `backups/`. The 2026-05-18 backup predates the Lab vector
 fill / outline mesh, the deformed-mesh SVG export, the six new Lab effects,

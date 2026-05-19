@@ -38,7 +38,8 @@ Three pages share the same canvas and renderer:
 
 - Layered subjects (Text / SVG) with **Outline / Solid Fill / Particles /
   Halftone** styles. Reorder via drag-and-drop, ↑/↓ buttons, or × / eye
-  icons.
+  icons. The top row of the Layers panel composites in front on the canvas,
+  and new layers spawn at the top of the stack.
 - **Solid Fill** and **Outline** render as **real triangulated polygon
   meshes** (marching-squares contour extraction for text, direct path
   triangulation for SVG, hole containment by signed-area, midpoint
@@ -97,6 +98,8 @@ If you'd rather host elsewhere (Netlify, Vercel, your own server), upload
 
 Each tool has its own collapsible panel of sliders, color pickers, toggles,
 and inputs. Hovering shows labels; values update live, no apply step.
+Per-tool section open/collapsed state is remembered within the session, so
+switching tools and coming back keeps the panel exactly how you left it.
 
 - **Reset** restores per-tool defaults.
 - **Pause** + **Restart** affect the time clock.
