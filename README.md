@@ -1,94 +1,164 @@
-# WebGL Motion Studies
+# MotionKit
 
-A small browser-based exploration tool for motion graphics. Built as a single HTML file using Three.js. Two animations included:
-
-- **Glyph** — animated shapes (square, circle, triangle) traveling along letterform paths from the Hershey simplex stroke font. Each character gets independent shape distribution, with rotation envelopes, looping noise, and a per-character wave toggle.
-- **Vinyl** — text rendered as concentric ring grooves, with each ring sliced into arc segments that rotate around screen center. Includes Perlin-noise-driven per-segment rotation and a radial gradient mask that scales the overall effect strength.
+A single-file browser studio for designing interactive motion graphics. Built
+on Three.js, no build step, no `npm install`. Everything lives in one
+`index.html`.
 
 ## Live demo
 
-👉 **[Try it in your browser](https://nick-a8c.github.io/webgl-motion-studies/)**
+👉 **[nick-a8c.github.io/motionkit](https://nick-a8c.github.io/motionkit/)**
 
-## Preview
+## What's inside
 
-<!-- Replace with actual screenshot or GIF -->
-![Preview](https://nick-a8c.github.io/webgl-motion-studies/preview/example.png)
+Three pages share the same canvas and renderer:
 
-<!--
-Suggested capture:
-- 1280×800 viewport
-- Glyph default (text "A8C", red on light gray) animating
-- ~3 second GIF or a still PNG
--->
+- **Landing** — animated hero (211 small star outlines arranged along a big
+  star, with a cursor-thickening hover halo).
+- **Playground** — gallery of seven tunable animations, each with its own
+  controls panel, the shared overlay pass (Gradient · Pixelate · Halftone),
+  and full snapshot/HTML/PNG/SVG export.
+- **Lab** — blank-canvas builder with layered subjects (text + SVG),
+  triangulated vector silhouettes you can deform per-vertex, EFFECTS layers
+  with a cascading motion + pixel pipeline, and a per-tool save-to-Playground
+  flow.
+
+### Playground tools
+
+| Tool | What it is |
+|---|---|
+| **Composer** | Recipe-driven: pick a Source (Circle, Lissajous, Grid, or uploaded SVG), one or more Primitives (round-robin), and a chain of motion Effects. Per-instance line-thickness gradient included. |
+| **Glyph** | Animated shapes traveling along Hershey-font letterform paths. Includes Composer-style Primitive + Effects pickers as a sub-recipe in the middle column. |
+| **Vinyl** | Text mask sliced into concentric ring grooves with per-segment Perlin rotation. |
+| **Waves** | Stacked sine rows displaced by an optional text/SVG silhouette force. Two-button Fill/Outline SVG mode. |
+| **Dots** | Bitmap-style dot grid that morphs between text frames. Three-color palette (background / foreground / off cells). |
+| **Particles** | Field-driven particle system with halftone-style attraction and repulsion. |
+| **Halftone** | Bayer-dithered halftone over text / SVG / solid / shift-click point cloud. Includes a wave animation + cursor halo. |
+
+### Lab features
+
+- Layered subjects (Text / SVG) with **Outline / Solid Fill / Particles /
+  Halftone** styles. Reorder via drag-and-drop, ↑/↓ buttons, or × / eye
+  icons.
+- **Solid Fill** and **Outline** render as **real triangulated polygon
+  meshes** (marching-squares contour extraction for text, direct path
+  triangulation for SVG, hole containment by signed-area, midpoint
+  subdivision for deformation density). Effects deform vertices per-frame;
+  SVG export walks the deformed boundary as a single `<path
+  fill-rule="evenodd">`.
+- **EFFECTS layers** cascade motion (Position noise, Flow field, Wave flow,
+  Skew, Scale pulse, Repulsion, Orbit, Glitch, Pulse, Cursor attractor) onto
+  every layer beneath them in the stack. Pixel effects (Tint, Grain,
+  Chromatic aberration, Pixelate, Ripple, Hue rotate, Invert, Halftone,
+  Bloom, Kaleidoscope, Edge detect, Rounded corners) run as a post-process
+  chain.
+- **Per-style defaults** swap in sensible starting values on style change.
+- **Font dropdown** with 16 entries (System mono + 15 Google Fonts).
+- **Save to Playground** persists a Lab tool to `localStorage` and surfaces
+  it as a removable card in the Playground grid.
+
+## Exports
+
+| Format | What it carries |
+|---|---|
+| **JSON** | Lossless snapshot. v2 schema with layers, effects, transparent flag, inlined SVG assets. |
+| **PNG** | Oversampled to 2048² (×1), 4096² (×2), or 6144² (×3). Honors the Transparent toggle. |
+| **SVG** | Real vector elements — polylines for outlines, circles for particle / halftone instances, and `<path fill-rule="evenodd">` paths for deformed Solid Fill / Outline meshes. |
+| **HTML** | Self-contained `.html` with Three.js + Line2 from CDN, the animation's IIFE inlined, baked params, and optional PAN / ZOOM interaction (per-export checkboxes). |
 
 ## Run
-
-It's a single static HTML file. Open it any way you like:
 
 ```bash
 # Just open in a browser:
 open index.html
 
-# Or serve it (some browsers behave better with HTTP than file://):
+# Or serve it (HTTP behaves better than file:// in some browsers):
 python3 -m http.server 8000
 # then visit http://localhost:8000
 ```
 
-No build step, no `npm install`. Three.js and the Line2 modules are loaded from CDNs at runtime.
+No build step, no `npm install`. Three.js and the Line2 modules are loaded
+from CDN at runtime.
 
 ## Hosting
 
-The repo is set up to work with **GitHub Pages** out of the box (no config files needed — `index.html` at the root just works).
+The repo is set up for **GitHub Pages** — `index.html` at the root, no
+config files needed. To enable on a fresh fork:
 
-To enable it on a fresh GitHub repo:
+1. Push to GitHub.
+2. Repo **Settings** → **Pages** → **Deploy from a branch** → `main` /
+   `(root)` → **Save**.
+3. ~30 seconds later your site is live at
+   `https://<username>.github.io/<repo-name>/`.
 
-1. Push this repo to GitHub
-2. Go to your repo's **Settings** → **Pages** (in the sidebar)
-3. Under **Source**, choose **Deploy from a branch**
-4. Pick `main` branch, `/ (root)` folder, then click **Save**
-5. Wait ~30 seconds; your site will be live at `https://<your-username>.github.io/<repo-name>/`
-
-Update the [Live demo](#live-demo) link above with your URL once it's live.
-
-If you'd rather host elsewhere (Netlify, Vercel, your own server), just upload `index.html` — there's nothing else to deploy.
+If you'd rather host elsewhere (Netlify, Vercel, your own server), upload
+`index.html` and you're done.
 
 ## Controls
 
-Each animation has its own panel of sliders, color pickers, toggles, and a text input. Hover over any control to see its label; the value updates live with no apply step. The **Reset** button restores per-animation defaults; **Pause** and **Restart** affect the time clock. There's a **Light/Dark mode** toggle at the bottom — choice persists in localStorage.
+Each tool has its own collapsible panel of sliders, color pickers, toggles,
+and inputs. Hovering shows labels; values update live, no apply step.
 
-The text input supports the pipe character `|` for line breaks (max 3 lines).
+- **Reset** restores per-tool defaults.
+- **Pause** + **Restart** affect the time clock.
+- **Shift-drag** on the canvas scrubs the timeline while paused.
+- **Drag** pans the camera (HTML export honors the PAN checkbox).
+- **Scroll** zooms (HTML export honors the ZOOM checkbox).
+- **Double-click** resets pan + zoom + scrub.
+- **Light / Dark mode** toggle at the bottom — choice persists in
+  `localStorage`.
+
+The text input on every tool supports the pipe character `|` for line breaks
+(up to 3 lines).
 
 ## Architecture (brief)
 
 ```
 index.html
-├── SECTION 1: Shared utilities (noise functions: value, looping, Perlin, FBM)
-├── SECTION 2: Glyph animation (Hershey font + path-following shapes)
-├── SECTION 3: Vinyl animation (text mask + concentric rings + Perlin)
-└── SECTION 4: Main app (renderer, animation registry, UI plumbing)
+├── SECTION 1     Shared utilities (MotionNoise: value, looping, Perlin, FBM)
+├── SECTION 2     Glyph animation
+├── SECTION 3     Vinyl animation
+├── SECTION 3.4   Waves
+├── SECTION 3.46  Dots
+├── SECTION 3.47  Particles (internal id: "gradient")
+├── SECTION 3.48  Halftone
+├── SECTION 3.5   Composer (segment registry + recipe engine)
+└── SECTION 4     Main app (renderer, page nav, exports, Lab module)
 ```
 
-Animations register themselves via `window.MotionAnimations.push({...})`. Each animation declares:
+Animations register themselves via `window.MotionAnimations.push({...})`.
+Each declares:
 
 - `id`, `label` — registry identifiers
-- `bg`, `metaColor` — initial canvas background and meta-text color (canvas bg becomes a control in the panel)
-- `controls` — schema-driven UI: sliders, text inputs, color pickers, toggles
-- `build(group)` — called once when the animation is selected; sets up Three.js objects on the provided group
+- `bg`, `metaColor` — initial clear color + meta-text color
+- `controls` — schema-driven UI (sliders, text inputs, color pickers,
+  toggles, checkboxes, choices)
+- `build(group)` — called once when the animation is selected; sets up
+  Three.js objects on the provided group
 - `update(t, params, state)` — called every animation frame
+- `attractor(state, mx, my)` — optional cursor hook
 
-State persistence: each animation's parameters live in their own object and survive across animation switches. Only the explicit Reset button restores defaults.
+State persistence: each animation's parameters live in their own object and
+survive across switches. Only the explicit Reset button restores defaults.
+
+The Lab module is a single IIFE near the bottom of Section 4 — its recipe
+model, layer-state aliasing, marching-squares triangulation, mesh
+deformation, and HTML/PNG/SVG/JSON export are all there. See `Handoff.md`
+for a deeper map.
 
 ## Dependencies
 
 - [Three.js r128](https://threejs.org/) — core 3D library
-- Line2 / LineMaterial / LineGeometry from Three.js examples (variable-thickness lines for Glyph)
+- Line2 / LineMaterial / LineGeometry from Three.js examples (variable-
+  thickness lines)
 - Hershey simplex Roman font data (public domain, embedded inline; ~7KB)
+- Google Fonts (loaded once on Lab init for the font dropdown)
 
-All loaded from CDN. No local dependencies.
+All loaded from CDN at runtime. No local dependencies.
 
 ## Browser support
 
-Targets modern evergreen browsers with WebGL. Tested on Chrome, Safari, Firefox.
+Targets modern evergreen browsers with WebGL. Tested on Chrome, Safari,
+Firefox.
 
 ## Credits
 
@@ -97,4 +167,5 @@ Targets modern evergreen browsers with WebGL. Tested on Chrome, Safari, Firefox.
 
 ## License
 
-All rights reserved. No license is granted for use, modification, or redistribution.
+All rights reserved. No license is granted for use, modification, or
+redistribution.
